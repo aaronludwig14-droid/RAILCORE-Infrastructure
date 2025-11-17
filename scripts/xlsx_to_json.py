@@ -1,5 +1,4 @@
 import json
-import datetime
 from pathlib import Path
 
 import openpyxl
@@ -25,34 +24,25 @@ def load_sidings(ws):
 
 
 def main():
-    xlsx_path = Path("RAILCORE_Master_Sidings.xlsx")
+    # Master file location in your repo:
+    xlsx_path = Path("data/public/RAILCORE_Master_Sidings.xlsx")
     if not xlsx_path.exists():
         raise SystemExit(f"Missing file: {xlsx_path}")
 
     wb = openpyxl.load_workbook(xlsx_path, data_only=True)
 
-    # For now we only have a "Sidings" sheet. Later we can add Crossings, Track, etc.
     if "Sidings" not in wb.sheetnames:
         raise SystemExit("Workbook must contain a 'Sidings' sheet.")
 
     sidings_ws = wb["Sidings"]
     sidings = load_sidings(sidings_ws)
 
-    infra = {
-        "version": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        "source_file": str(xlsx_path),
-        "data": {
-            "sidings": sidings,
-            # placeholders for the future:
-            "crossings": [],
-            "track": [],
-            "detectors": [],
-        },
-    }
+    out_dir = Path("data/json")
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    out_path = Path("railcore_infra.json")
-    out_path.write_text(json.dumps(infra, indent=2), encoding="utf-8")
-    print(f"Wrote {out_path} with {len(sidings)} sidings.")
+    sidings_path = out_dir / "sidings.json"
+    sidings_path.write_text(json.dumps({"sidings": sidings}, indent=2), encoding="utf-8")
+    print(f"Wrote {sidings_path} with {len(sidings)} sidings.")
 
 
 if __name__ == "__main__":
