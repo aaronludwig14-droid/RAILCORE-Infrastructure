@@ -1,45 +1,36 @@
-name: Build sidings.json from Excel
+name: Convert Master Workbook to JSON
 
 on:
   push:
     paths:
-      - "data/public/RAILCORE_Master_Sidings.xlsx"
-      - "scripts/xlsx_to_json.py"
-  workflow_dispatch: {}
-
-permissions:
-  contents: write
+      - 'data/RAILCORE_Infrastructure_GitHubMaster.xlsx'
 
 jobs:
-  build-json:
+  convert:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install openpyxl
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install openpyxl pandas
 
-      - name: Convert Excel to JSON
-        run: |
-          python scripts/xlsx_to_json.py
+    - name: Run conversion script
+      run: |
+        python scripts/convert_master_to_json.py
 
-      - name: Commit updated JSON (if changed)
-        run: |
-          if git status --porcelain | grep "data/json/sidings.json"; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add data/json/sidings.json
-            git commit -m "Auto-update sidings.json from Excel"
-            git push
-          else
-            echo "No changes in sidings.json"
-          fi
+    - name: Commit JSON output
+      run: |
+        git config user.name "RailCore AutoUpdate"
+        git config user.email "actions@github.com"
+        git add data/json/*.json
+        git commit -m "Auto-update JSON from master workbook" || echo "No changes"
+        git push
