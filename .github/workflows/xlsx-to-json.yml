@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repo
+    - name: Checkout repo
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -25,11 +25,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install pandas openpyxl
 
-    - name: Convert Excel → JSON
+    - name: Convert Excel to JSON
       run: |
         python scripts/xlsx_to_json.py
 
-    - name: Commit updated JSON files
+    - name: Commit updated JSON
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
